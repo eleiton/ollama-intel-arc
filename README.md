@@ -45,35 +45,36 @@ All these containers have been optimized for Intel Arc Series GPUs on Linux syst
 ## Setup
 Run the following commands to start your Ollama instance with Open WebUI
 ```bash
-$ git clone https://github.com/eleiton/ollama-intel-arc.git
-$ cd ollama-intel-arc
-$ podman compose up
+git clone https://github.com/eleiton/ollama-intel-arc.git
+cd ollama-intel-arc
+podman compose up
 ```
 
 Additionally, if you want to run one or more of the image generation tools, run these command in a different terminal:
 
 For ComfyUI
 ```bash
-$ podman compose -f docker-compose.comfyui.yml up
+podman compose -f docker-compose.comfyui.yml up
 ```
 
 For SD.Next
 ```bash
-$ podman compose -f docker-compose.sdnext.yml up
+podman compose -f docker-compose.sdnext.yml up
 ```
 
 If you want to run Whisper for automatic speech recognition, run this command in a different terminal:
 ```bash
-$ podman compose -f docker-compose.whisper.yml up
+podman compose -f docker-compose.whisper.yml up
 ```
 
 ## Validate
 Run the following command to verify your Ollama instance is up and running
 ```bash
-$ curl http://localhost:11434/
-Ollama is running
+curl http://localhost:11434/
 ```
+This will show `Ollama is running`.
 When using Open WebUI, you should see this partial output in your console, indicating your arc gpu was detected
+
 ```bash
 [ollama-intel-arc] | Found 1 SYCL devices:
 [ollama-intel-arc] | |  |                   |                                       |       |Max    |        |Max  |Global |                     |
@@ -105,7 +106,7 @@ When using Open WebUI, you should see this partial output in your console, indic
 ## Using Automatic Speech Recognition
 * This is an example of a command to transcribe audio files:
 ```bash
-  podman exec -it  whisper-ipex whisper https://www.lightbulblanguages.co.uk/resources/ge-audio/hobbies-ge.mp3 --device xpu --model small --language German --task transcribe
+podman exec -it  whisper-ipex whisper https://www.lightbulblanguages.co.uk/resources/ge-audio/hobbies-ge.mp3 --device xpu --model small --language German --task transcribe
 ```
 * Response:
 ```bash
@@ -119,7 +120,7 @@ When using Open WebUI, you should see this partial output in your console, indic
 ```
 * This is an example of a command to translate audio files:
 ```bash
-  podman exec -it  whisper-ipex whisper https://www.lightbulblanguages.co.uk/resources/ge-audio/hobbies-ge.mp3 --device xpu --model small --language German --task translate
+podman exec -it  whisper-ipex whisper https://www.lightbulblanguages.co.uk/resources/ge-audio/hobbies-ge.mp3 --device xpu --model small --language German --task translate
 ```
 * Response:
 ```bash
@@ -138,7 +139,7 @@ When using Open WebUI, you should see this partial output in your console, indic
 ```
 * To use your own audio files instead of web files, place them in the `~/whisper-files` folder and access them like this:
 ```bash
-  podman exec -it  whisper-ipex whisper YOUR_FILE_NAME.mp3 --device xpu --model small --task translate
+podman exec -it  whisper-ipex whisper YOUR_FILE_NAME.mp3 --device xpu --model small --task translate
 ```
 
 ## Updating the containers
@@ -146,26 +147,26 @@ If there are new updates in the [ipex-llm-inference-cpp-xpu](https://hub.docker.
 
 Before any updates, be sure to stop your containers
 ```bash
-$ podman compose down 
+podman compose down 
 ```
 
 Then just run a pull command to retrieve the `latest` images.
 ```bash
-$ podman compose pull
+podman compose pull
 ```
 
 
 After that, you can run compose up to start your services again.
 ```bash
-$ podman compose up
+podman compose up
 ```
 
 ## Manually connecting to your Ollama container
 You can connect directly to your Ollama container by running these commands:
 
 ```bash
-$ podman exec -it ollama-intel-arc /bin/bash
-$ /llm/ollama/ollama -v
+podman exec -it ollama-intel-arc /bin/bash
+/llm/ollama/ollama -v
 ```
 
 ## My development environment:
