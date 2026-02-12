@@ -2,10 +2,10 @@
 
 [[Blog](https://blog.eleiton.dev/posts/llm-and-genai-in-docker/)]
 
-Effortlessly deploy a Docker-based solution that uses [Open WebUI](https://github.com/open-webui/open-webui) as your user-friendly 
+Effortlessly deploy a Docker-based solution that uses [Open WebUI](https://github.com/open-webui/open-webui) as your user-friendly
 AI Interface and [Ollama](https://github.com/ollama/ollama) for integrating Large Language Models (LLM).
 
-Additionally, you can run [ComfyUI](https://github.com/comfyanonymous/ComfyUI) or [SD.Next](https://github.com/vladmandic/sdnext) docker containers to 
+Additionally, you can run [ComfyUI](https://github.com/comfyanonymous/ComfyUI) or [SD.Next](https://github.com/vladmandic/sdnext) docker containers to
 streamline Stable Diffusion capabilities.
 
 You can also run an optional docker container with [OpenAI Whisper](https://github.com/openai/whisper) to perform Automatic Speech Recognition (ASR) tasks.
@@ -15,6 +15,7 @@ All these containers have been optimized for Intel Arc Series GPUs on Linux syst
 ![screenshot](resources/open-webui.png)
 
 ## Services
+
 1. Ollama  
    * Runs llama.cpp and Ollama with IPEX-LLM on your Linux computer with Intel Arc GPU.  
    * Built following the guidelines from [Intel](https://github.com/intel/ipex-llm/blob/main/docs/mddocs/DockerGuides/README.md).  
@@ -43,37 +44,46 @@ All these containers have been optimized for Intel Arc Series GPUs on Linux syst
    * Uses as the base container the official [Intel® Extension for PyTorch](* Uses as the base container the official [Intel® Extension for PyTorch](https://pytorch-extension.intel.com/installation?platform=gpu)
 
 ## Setup
+
 Run the following commands to start your Ollama instance with Open WebUI
+
 ```bash
-$ git clone https://github.com/eleiton/ollama-intel-arc.git
-$ cd ollama-intel-arc
-$ podman compose up
+git clone https://github.com/eleiton/ollama-intel-arc.git
+cd ollama-intel-arc
+podman compose up
 ```
 
 Additionally, if you want to run one or more of the image generation tools, run these command in a different terminal:
 
 For ComfyUI
+
 ```bash
-$ podman compose -f docker-compose.comfyui.yml up
+podman compose -f docker-compose.comfyui.yml up
 ```
 
 For SD.Next
+
 ```bash
-$ podman compose -f docker-compose.sdnext.yml up
+podman compose -f docker-compose.sdnext.yml up
 ```
 
 If you want to run Whisper for automatic speech recognition, run this command in a different terminal:
+
 ```bash
-$ podman compose -f docker-compose.whisper.yml up
+podman compose -f docker-compose.whisper.yml up
 ```
 
 ## Validate
+
 Run the following command to verify your Ollama instance is up and running
+
 ```bash
 $ curl http://localhost:11434/
 Ollama is running
 ```
+
 When using Open WebUI, you should see this partial output in your console, indicating your arc gpu was detected
+
 ```bash
 [ollama-intel-arc] | Found 1 SYCL devices:
 [ollama-intel-arc] | |  |                   |                                       |       |Max    |        |Max  |Global |                     |
@@ -84,7 +94,8 @@ When using Open WebUI, you should see this partial output in your console, indic
 ```
 
 ## Using Image Generation
-* Open your web browser to http://localhost:7860 to access the SD.Next web page.
+
+* Open your web browser to <http://localhost:7860> to access the SD.Next web page.
 * For the purposes of this demonstration, we'll use the [DreamShaper](https://civitai.com/models/4384/dreamshaper) model.
 * Follow these steps:
 * Download the  `dreamshaper_8` model by clicking on its image (1).
@@ -92,7 +103,7 @@ When using Open WebUI, you should see this partial output in your console, indic
 * (Optional) If you want to stay in the SD.Next UI, feel free to explore (3).
 ![screenshot](resources/sd.next.png)
 * For more information on using SD.Next, refer to the official [documentation](https://vladmandic.github.io/sdnext-docs/).
-* Open your web browser to http://localhost:4040 to access the Open WebUI web page.
+* Open your web browser to <http://localhost:4040> to access the Open WebUI web page.
 * Go to the administrator [settings](http://localhost:4040/admin/settings) page.
 * Go to the Image section (1)
 * Make sure all settings look good, and validate them pressing the refresh button (2)
@@ -103,11 +114,15 @@ When using Open WebUI, you should see this partial output in your console, indic
 ![screenshot](resources/open-webui-chat.png)
 
 ## Using Automatic Speech Recognition
+
 * This is an example of a command to transcribe audio files:
+
 ```bash
   podman exec -it  whisper-ipex whisper https://www.lightbulblanguages.co.uk/resources/ge-audio/hobbies-ge.mp3 --device xpu --model small --language German --task transcribe
 ```
+
 * Response:
+
 ```bash
   [00:00.000 --> 00:08.000]  Ich habe viele Hobbys. In meiner Freizeit mache ich sehr gerne Sport, wie zum Beispiel Wasserball oder Radfahren.
   [00:08.000 --> 00:13.000]  Außerdem lese ich gerne und lerne auch gerne Fremdsprachen.
@@ -117,11 +132,15 @@ When using Open WebUI, you should see this partial output in your console, indic
   [00:26.000 --> 00:29.000]  Außerdem werde ich viel schwimmen gehen.
   [00:29.000 --> 00:33.000]  Am liebsten würde ich das natürlich im Meer machen.
 ```
+
 * This is an example of a command to translate audio files:
+
 ```bash
   podman exec -it  whisper-ipex whisper https://www.lightbulblanguages.co.uk/resources/ge-audio/hobbies-ge.mp3 --device xpu --model small --language German --task translate
 ```
+
 * Response:
+
 ```bash
   [00:00.000 --> 00:02.000]  I have a lot of hobbies.
   [00:02.000 --> 00:05.000]  In my free time I like to do sports,
@@ -136,44 +155,52 @@ When using Open WebUI, you should see this partial output in your console, indic
   [00:26.000 --> 00:29.000]  Besides, I will go swimming a lot.
   [00:29.000 --> 00:33.000]  Of course, I would prefer to do this in the sea.
 ```
+
 * To use your own audio files instead of web files, place them in the `~/whisper-files` folder and access them like this:
+
 ```bash
   podman exec -it  whisper-ipex whisper YOUR_FILE_NAME.mp3 --device xpu --model small --task translate
 ```
 
 ## Updating the containers
+
 If there are new updates in the [ipex-llm-inference-cpp-xpu](https://hub.docker.com/r/intelanalytics/ipex-llm-inference-cpp-xpu) docker Image or in the Open WebUI docker Image, you may want to update your containers, to stay up to date.
 
 Before any updates, be sure to stop your containers
+
 ```bash
-$ podman compose down 
+podman compose down 
 ```
 
 Then just run a pull command to retrieve the `latest` images.
+
 ```bash
-$ podman compose pull
+podman compose pull
 ```
 
-
 After that, you can run compose up to start your services again.
+
 ```bash
-$ podman compose up
+podman compose up
 ```
 
 ## Manually connecting to your Ollama container
+
 You can connect directly to your Ollama container by running these commands:
 
 ```bash
-$ podman exec -it ollama-intel-arc /bin/bash
-$ /llm/ollama/ollama -v
+podman exec -it ollama-intel-arc /bin/bash
+/llm/ollama/ollama -v
 ```
 
-## My development environment:
+## My development environment
+
 * Core Ultra 7 155H
 * Intel® Arc™ Graphics (Meteor Lake-P)
 * Fedora 41
 
-## References 
+## References
+
 * [Open WebUI documentation](https://docs.openwebui.com/)
 * [Docker - Intel ipex-llm tags](https://hub.docker.com/r/intelanalytics/ipex-llm-serving-xpu/tags)
 * [Docker - Intel extension for pytorch](https://hub.docker.com/r/intel/intel-extension-for-pytorch/tags)
