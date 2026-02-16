@@ -1,3 +1,35 @@
+
+<div align="right">
+  <details>
+    <summary >🌐 Language</summary>
+    <div>
+      <div align="center">
+        <a href="https://openaitx.github.io/view.html?user=eleiton&project=ollama-intel-arc&lang=en">English</a>
+        | <a href="https://openaitx.github.io/view.html?user=eleiton&project=ollama-intel-arc&lang=zh-CN">简体中文</a>
+        | <a href="https://openaitx.github.io/view.html?user=eleiton&project=ollama-intel-arc&lang=zh-TW">繁體中文</a>
+        | <a href="https://openaitx.github.io/view.html?user=eleiton&project=ollama-intel-arc&lang=ja">日本語</a>
+        | <a href="https://openaitx.github.io/view.html?user=eleiton&project=ollama-intel-arc&lang=ko">한국어</a>
+        | <a href="https://openaitx.github.io/view.html?user=eleiton&project=ollama-intel-arc&lang=hi">हिन्दी</a>
+        | <a href="https://openaitx.github.io/view.html?user=eleiton&project=ollama-intel-arc&lang=th">ไทย</a>
+        | <a href="https://openaitx.github.io/view.html?user=eleiton&project=ollama-intel-arc&lang=fr">Français</a>
+        | <a href="https://openaitx.github.io/view.html?user=eleiton&project=ollama-intel-arc&lang=de">Deutsch</a>
+        | <a href="https://openaitx.github.io/view.html?user=eleiton&project=ollama-intel-arc&lang=es">Español</a>
+        | <a href="https://openaitx.github.io/view.html?user=eleiton&project=ollama-intel-arc&lang=it">Italiano</a>
+        | <a href="https://openaitx.github.io/view.html?user=eleiton&project=ollama-intel-arc&lang=ru">Русский</a>
+        | <a href="https://openaitx.github.io/view.html?user=eleiton&project=ollama-intel-arc&lang=pt">Português</a>
+        | <a href="https://openaitx.github.io/view.html?user=eleiton&project=ollama-intel-arc&lang=nl">Nederlands</a>
+        | <a href="https://openaitx.github.io/view.html?user=eleiton&project=ollama-intel-arc&lang=pl">Polski</a>
+        | <a href="https://openaitx.github.io/view.html?user=eleiton&project=ollama-intel-arc&lang=ar">العربية</a>
+        | <a href="https://openaitx.github.io/view.html?user=eleiton&project=ollama-intel-arc&lang=fa">فارسی</a>
+        | <a href="https://openaitx.github.io/view.html?user=eleiton&project=ollama-intel-arc&lang=tr">Türkçe</a>
+        | <a href="https://openaitx.github.io/view.html?user=eleiton&project=ollama-intel-arc&lang=vi">Tiếng Việt</a>
+        | <a href="https://openaitx.github.io/view.html?user=eleiton&project=ollama-intel-arc&lang=id">Bahasa Indonesia</a>
+        | <a href="https://openaitx.github.io/view.html?user=eleiton&project=ollama-intel-arc&lang=as">অসমীয়া</
+      </div>
+    </div>
+  </details>
+</div>
+
 # Run Ollama, Stable Diffusion and Automatic Speech Recognition with your Intel Arc GPU
 
 [[Blog](https://blog.eleiton.dev/posts/llm-and-genai-in-docker/)]
