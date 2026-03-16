@@ -1,0 +1,100 @@
+services:
+  sycl-ollama:
+    build:
+      context: sycl-ollama
+      dockerfile: Dockerfile
+      args:
+        OLLAMA_VERSION: "0.16.1"
+    image: sycl-ollama:local
+    container_name: sycl-ollama
+    restart: unless-stopped
+
+    shm_size: "16G"                        # Shared memory limit (/dev/shm). Docker defaults to 64 MB which is too small
+                                           # for SYCL kernel caches, Level Zero buffers, and memory-mapped model loading.
+
+    devices:
+      - /dev/dri:/dev/dri                 # Required: maps Intel GPU render & card nodes for SYCL / Level Zero access
+
+    volumes:
+      - ollama-volume:/root/.ollama       # Persistent storage for downloaded models (shared with main stack)
+
+    ports:
+      - 11434:11434                       # Exposes Ollama API (default port)
+
+    environment:
+      # ───────────────────────────────────────────────────────────────
+      # Proxy bypass — prevents corporate/system HTTP proxies from
+      # intercepting container-to-container and localhost traffic.
+      # Without this, model downloads may work but inter-service
+      # calls (Open WebUI → Ollama) can silently fail or time out.
+      # ───────────────────────────────────────────────────────────────
+      - no_proxy=${no_proxy:-localhost,127.0.0.1,sycl-ollama,open-webui-sycl}
+      - NO_PROXY=${NO_PROXY:-localhost,127.0.0.1,sycl-ollama,open-webui-sycl}
+
+      # ───────────────────────────────────────────────────────────────
+      # Ollama server & runtime behavior
+      # ───────────────────────────────────────────────────────────────
+      - OLLAMA_HOST=0.0.0.0
+      - OLLAMA_NUM_PARALLEL=${OLLAMA_NUM_PARALLEL:-1}
+      - OLLAMA_DEFAULT_KEEPALIVE=${OLLAMA_DEFAULT_KEEPALIVE:-6h}
+      - OLLAMA_KEEP_ALIVE=${OLLAMA_KEEP_ALIVE:-24h}
+      - OLLAMA_MAX_LOADED_MODELS=${OLLAMA_MAX_LOADED_MODELS:-1}
+      - OLLAMA_MAX_QUEUE=${OLLAMA_MAX_QUEUE:-512}
+      - OLLAMA_MAX_VRAM=${OLLAMA_MAX_VRAM:-0}
+      - OLLAMA_DEBUG=${OLLAMA_DEBUG:-1}
+
+      # ───────────────────────────────────────────────────────────────
+      # Context length & KV cache quantization
+      # ───────────────────────────────────────────────────────────────
+      - OLLAMA_CONTEXT_LENGTH=${OLLAMA_CONTEXT_LENGTH:-16384}
+      - OLLAMA_KV_CACHE_TYPE=${OLLAMA_KV_CACHE_TYPE:-q4_0}
+      - OLLAMA_FLASH_ATTENTION=${OLLAMA_FLASH_ATTENTION:-1}
+
+      # ───────────────────────────────────────────────────────────────
+      # Intel SYCL / Level Zero GPU tuning
+      # ───────────────────────────────────────────────────────────────
+      - ONEAPI_DEVICE_SELECTOR=${ONEAPI_DEVICE_SELECTOR:-level_zero:0}
+      - ZES_ENABLE_SYSMAN=${ZES_ENABLE_SYSMAN:-1}
+      - SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=${SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS:-1}
+      - SYCL_CACHE_PERSISTENT=${SYCL_CACHE_PERSISTENT:-1}
+      - ENABLE_SDP_FUSION=${ENABLE_SDP_FUSION:-1}
+
+      # ───────────────────────────────────────────────────────────────
+      # GPU layer offloading
+      # ───────────────────────────────────────────────────────────────
+      - OLLAMA_NUM_GPU=${OLLAMA_NUM_GPU:-999}
+
+  open-webui:
+    image: ghcr.io/open-webui/open-webui:latest
+    container_name: open-webui-sycl
+    volumes:
+      - open-webui-volume:/app/backend/data
+    depends_on:
+      - sycl-ollama
+    ports:
+      - ${OLLAMA_WEBUI_PORT:-4040}:8080
+    environment:
+      - OLLAMA_BASE_URL=http://sycl-ollama:11434
+
+      # Proxy bypass (see Ollama service for explanation)
+      - no_proxy=${no_proxy:-localhost,127.0.0.1,sycl-ollama,open-webui-sycl}
+      - NO_PROXY=${NO_PROXY:-localhost,127.0.0.1,sycl-ollama,open-webui-sycl}
+
+      - WEBUI_AUTH=False
+      - ENABLE_OPENAI_API=False
+      - ENABLE_OLLAMA_API=True
+
+      # Web search for RAG
+      - ENABLE_RAG_WEB_SEARCH=True
+
+      # Telemetry opt-out
+      - SCARF_NO_ANALYTICS=true
+      - DO_NOT_TRACK=true
+      - ANONYMIZED_TELEMETRY=false
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    restart: unless-stopped
+
+volumes:
+  ollama-volume: {}
+  open-webui-volume: {}

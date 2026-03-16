@@ -14,6 +14,22 @@ All these containers have been optimized for Intel Arc Series GPUs on Linux syst
 
 ![screenshot](resources/open-webui.png)
 
+## Tested Hardware
+
+| Intel GPU | Status |
+|---|---|
+| Core Ultra 7 155H integrated Arc (Meteor Lake) | Verified |
+| Arc A-series (A770, A750, A380) | Expected compatible |
+| Data Center Flex / Max | Expected compatible |
+
+## Documentation
+
+* **[SYCL vs Vulkan — GPU Backend Comparison](docs/sycl-vs-vulkan.md)** — performance benchmarks (SYCL is 40–100% faster), three backend options (IPEX-LLM bundle, SYCL from source, upstream Vulkan), how `patch-sycl.py` works, and troubleshooting.
+* **[Intel Arc A770 Context Length & VRAM Guide](docs/intel-arc-a770-context-limits.md)** — how to choose context length, KV cache quantization, and model size for 16 GB Intel Arc GPUs. Includes VRAM budget tables, per-model recommendations, and environment variable reference.
+* **[Custom IPEX-LLM Dockerfile](ipex-ollama/Dockerfile)** — build your own Ollama image from scratch with pinned Intel GPU runtimes (Level Zero, IGC, compute-runtime) and the IPEX-LLM portable bundle. Uses BuildKit cache mounts for fast rebuilds.
+* **[SYCL Source Build Dockerfile](sycl-ollama/Dockerfile)** — multi-stage build that compiles `ggml-sycl` from source with Intel oneAPI, paired with the official Ollama v0.16.1 binary. Includes [`patch-sycl.py`](sycl-ollama/patch-sycl.py) for backward-compatible API patching (no patches needed as of v0.16.1).
+* **[docker-compose.yml](docker-compose.yml)** — fully documented Compose file with env-var driven configuration. All Intel GPU tuning knobs (SYCL, XeTLA, SDP fusion, KV cache, flash attention) are configurable via `${VAR:-default}` syntax and a `.env` file.
+
 ## Services
 1. Ollama  
    * Runs llama.cpp and Ollama with IPEX-LLM on your Linux computer with Intel Arc GPU.  
@@ -40,7 +56,7 @@ All these containers have been optimized for Intel Arc Series GPUs on Linux syst
 
 5. OpenAI Whisper
    * Robust Speech Recognition via Large-Scale Weak Supervision
-   * Uses as the base container the official [Intel® Extension for PyTorch](* Uses as the base container the official [Intel® Extension for PyTorch](https://pytorch-extension.intel.com/installation?platform=gpu)
+   * Uses as the base container the official [Intel® Extension for PyTorch](https://pytorch-extension.intel.com/installation?platform=gpu)
 
 ## Setup
 Run the following commands to start your Ollama instance with Open WebUI
@@ -48,6 +64,11 @@ Run the following commands to start your Ollama instance with Open WebUI
 $ git clone https://github.com/eleiton/ollama-intel-arc.git
 $ cd ollama-intel-arc
 $ podman compose up
+```
+
+Alternatively, to use the **SYCL-from-source** build (newer Ollama, faster inference — see [SYCL vs Vulkan](docs/sycl-vs-vulkan.md)):
+```bash
+$ podman compose -f docker-compose.sycl-ollama.yml up --build
 ```
 
 Additionally, if you want to run one or more of the image generation tools, run these command in a different terminal:
@@ -81,6 +102,12 @@ When using Open WebUI, you should see this partial output in your console, indic
 [ollama-intel-arc] | |ID|        Device Type|                                   Name|Version|units  |group   |group|size   |       Driver version|
 [ollama-intel-arc] | |--|-------------------|---------------------------------------|-------|-------|--------|-----|-------|---------------------|
 [ollama-intel-arc] | | 0| [level_zero:gpu:0]|                     Intel Arc Graphics|  12.71|    128|    1024|   32| 62400M|         1.6.32224+14|
+```
+
+For the **SYCL-from-source** build (`docker-compose.sycl-ollama.yml`), you should see:
+```bash
+[sycl-ollama] | Listening on [::]:11434 (version 0.16.1)
+[sycl-ollama] | inference compute  id="" library="" name=SYCL0 description="Intel(R) Arc(TM) Graphics" type=discrete total="28.0 GiB"
 ```
 
 ## Using Image Generation
@@ -166,6 +193,42 @@ You can connect directly to your Ollama container by running these commands:
 ```bash
 $ podman exec -it ollama-intel-arc /bin/bash
 $ /llm/ollama/ollama -v
+```
+
+## Project Structure
+
+```
+.
+├── docker-compose.yml                # Main stack: Ollama (IPEX-LLM) + Open WebUI
+├── docker-compose.sycl-ollama.yml    # SYCL-from-source Ollama + Open WebUI (alternative)
+├── docker-compose.comfyui.yml        # ComfyUI image generation
+├── docker-compose.sdnext.yml         # SD.Next image generation
+├── docker-compose.whisper.yml        # OpenAI Whisper speech recognition
+├── docker-compose.ramalama.yml       # RamaLama support
+│
+├── ipex-ollama/
+│   └── Dockerfile                    # IPEX-LLM bundle build (Ollama v0.9.3, SYCL)
+│
+├── sycl-ollama/                      # SYCL-from-source build (Ollama v0.16.1)
+│   ├── Dockerfile                    # Multi-stage: oneAPI build → minimal runtime
+│   ├── patch-sycl.py                 # API compat patches (no-op since v0.16.1)
+│   ├── start-ollama.sh               # Legacy entrypoint (from IPEX-LLM era)
+│   └── test-glm-ocr.sh              # Vision model test script (glm-ocr)
+│
+├── comfyui/
+│   └── Dockerfile                    # ComfyUI with Intel Extension for PyTorch
+├── sdnext/
+│   └── Dockerfile                    # SD.Next with Intel Extension for PyTorch
+├── whisper/
+│   └── Dockerfile                    # OpenAI Whisper with Intel Extension for PyTorch
+├── ramalama/
+│   └── Dockerfile                    # RamaLama container
+│
+├── docs/
+│   ├── sycl-vs-vulkan.md             # SYCL vs Vulkan backend comparison
+│   └── intel-arc-a770-context-limits.md  # VRAM & context length guide
+│
+└── resources/                        # Screenshots for README
 ```
 
 ## My development environment:
