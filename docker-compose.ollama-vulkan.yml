@@ -7,14 +7,27 @@ services:
       - /dev/dri:/dev/dri
     volumes:
       - ollama-volume:/root/.ollama
+      - vulkan-cache-volume:/root/.cache
     ports:
       - 11434:11434
     environment:
       - no_proxy=localhost,127.0.0.1
       - OLLAMA_HOST=0.0.0.0
       - OLLAMA_VULKAN=1
-      - GGML_VK_DISABLE_F16=1
+      - GGML_VK_DISABLE_F16=1           # required: Mesa ANV driver has fp16 compute bug on this iGPU
       - OLLAMA_FLASH_ATTENTION=true
+
+      # Pass-through from .env — values match recommendation
+      - OLLAMA_NUM_PARALLEL
+      - OLLAMA_MAX_LOADED_MODELS
+      - OLLAMA_MAX_QUEUE
+      - OLLAMA_DEBUG
+      - OLLAMA_CONTEXT_LENGTH
+      - OLLAMA_KV_CACHE_TYPE
+      - OLLAMA_NUM_GPU
+      - OLLAMA_MAX_VRAM
+      - OLLAMA_GPU_OVERHEAD
+      - OLLAMA_KEEP_ALIVE
 
   open-webui:
     image: ghcr.io/open-webui/open-webui:latest
@@ -45,4 +58,5 @@ services:
 
 volumes:
   ollama-volume: {}
+  vulkan-cache-volume: {}
   open-webui-volume: {}

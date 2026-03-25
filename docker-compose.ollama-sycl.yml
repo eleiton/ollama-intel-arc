@@ -6,7 +6,6 @@ services:
     image: ollama-sycl:local
     container_name: ollama-sycl
     restart: unless-stopped
-    shm_size: "16G"
     devices:
       - /dev/dri:/dev/dri
     volumes:
@@ -20,6 +19,10 @@ services:
       - ONEAPI_DEVICE_SELECTOR=level_zero:0
       - ZES_ENABLE_SYSMAN=1
       - SYCL_CACHE_PERSISTENT=1
+      - SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
+      - UR_L0_USE_IMMEDIATE_COMMANDLISTS=1
+
+      # Pass-through from .env — values match recommendation
       - OLLAMA_KEEP_ALIVE
       - OLLAMA_CONTEXT_LENGTH
       - OLLAMA_MAX_VRAM
@@ -28,8 +31,11 @@ services:
       - OLLAMA_MAX_QUEUE
       - OLLAMA_DEBUG
       - OLLAMA_FLASH_ATTENTION
+      - OLLAMA_KV_CACHE_TYPE
+      - OLLAMA_GPU_OVERHEAD
       - OLLAMA_NUM_GPU
       - GGML_SYCL_DEBUG
+      - GGML_SYCL_F16
 
   open-webui:
     image: ghcr.io/open-webui/open-webui:latest
