@@ -1,6 +1,6 @@
 services:
   ollama-vulkan:
-    image: ollama/ollama:latest
+    image: ollama/ollama:0.18.3
     container_name: ollama-vulkan
     restart: unless-stopped
     devices:
