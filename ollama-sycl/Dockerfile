@@ -69,8 +69,9 @@ RUN mkdir -p /sycl-runner && \
   cp /opt/intel/oneapi/compiler/latest/lib/libiomp5.so /sycl-runner/ && \
   # Level-zero PI plugin (legacy, may not exist)
   cp /opt/intel/oneapi/compiler/latest/lib/libpi_level_zero.so* /sycl-runner/ 2>/dev/null; \
-  # SYCL SPIR-V fallback kernels (needed for bfloat16, complex math, etc.)
+  # SYCL SPIR-V kernels (needed for bfloat16, complex math, etc.)
   cp /opt/intel/oneapi/compiler/latest/lib/libsycl-fallback*.spv /sycl-runner/ && \
+  cp /opt/intel/oneapi/compiler/latest/lib/libsycl-native*.spv /sycl-runner/ && \
   # Strip debug symbols to reduce size
   strip --strip-unneeded /sycl-runner/*.so* 2>/dev/null; true
 
