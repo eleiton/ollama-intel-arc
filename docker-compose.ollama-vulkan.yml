@@ -1,6 +1,6 @@
 services:
   ollama-vulkan:
-    image: ollama/ollama:0.24.0
+    image: ollama/ollama:0.30.0-rc23
     container_name: ollama-vulkan
     restart: unless-stopped
     devices:
@@ -15,15 +15,14 @@ services:
       - OLLAMA_HOST=0.0.0.0
       - OLLAMA_VULKAN=1
       - GGML_VK_DISABLE_F16=1           # required: Mesa ANV driver has fp16 compute bug on this iGPU
-      - OLLAMA_FLASH_ATTENTION=true
-
       # Pass-through from .env — values match recommendation
+      - OLLAMA_FLASH_ATTENTION
+      - OLLAMA_KV_CACHE_TYPE
       - OLLAMA_NUM_PARALLEL
       - OLLAMA_MAX_LOADED_MODELS
       - OLLAMA_MAX_QUEUE
       - OLLAMA_DEBUG
       - OLLAMA_CONTEXT_LENGTH
-      - OLLAMA_KV_CACHE_TYPE
       - OLLAMA_NUM_GPU
       - OLLAMA_MAX_VRAM
       - OLLAMA_GPU_OVERHEAD
