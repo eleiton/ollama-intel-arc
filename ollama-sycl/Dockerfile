@@ -1,4 +1,4 @@
-ARG OLLAMA_VERSION=0.30.0-rc23
+ARG OLLAMA_VERSION=0.30.2
 ARG COMPUTE_RUNTIME_VERSION=26.18.38308.1
 ARG LEVEL_ZERO_VERSION=1.28.2
 ARG IGC_VERSION=2.34.4
@@ -39,13 +39,13 @@ RUN cmake -S llama/server -B build \
 
 # Collect the SYCL runner and its oneAPI runtime dependencies into /sycl-runner
 RUN \
-  # SYCL / DPC++ runtime
+  # SYCL / DPC++ runtime \
   cp /opt/intel/oneapi/compiler/latest/lib/libsycl.so* /sycl-runner/ && \
   # Unified Runtime (oneAPI 2025+) — search multiple possible locations
   find /opt/intel/oneapi -name 'libur_loader.so*' | head -3 | xargs -I{} cp {} /sycl-runner/ && \
   find /opt/intel/oneapi -name 'libur_adapter_level_zero.so*' | head -3 | xargs -I{} cp {} /sycl-runner/ && \
   find /opt/intel/oneapi -maxdepth 4 -name 'libumf.so*' | head -3 | xargs -I{} cp {} /sycl-runner/ && \
-  # oneDNN (enabled by GGML_SYCL_DNN=ON default)
+  # oneDNN (enabled by GGML_SYCL_DNN=ON default) \
   cp /opt/intel/oneapi/dnnl/latest/lib/libdnnl.so* /sycl-runner/ 2>/dev/null; \
   # oneMKL
   cp /opt/intel/oneapi/mkl/latest/lib/libmkl_core.so* /sycl-runner/ && \
