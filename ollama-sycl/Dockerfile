@@ -120,9 +120,6 @@ ENV OLLAMA_KEEP_ALIVE=24h
 ENV ZES_ENABLE_SYSMAN=1
 ENV ONEAPI_DEVICE_SELECTOR=level_zero:0
 
-# For Intel Core Ultra Processors (Series 1), code name Meteor Lake
-ENV IPEX_LLM_NPU_MTL=1
-
 EXPOSE 11434
 ENTRYPOINT ["/usr/bin/ollama"]
 CMD ["serve"]

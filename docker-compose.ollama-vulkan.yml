@@ -13,9 +13,12 @@ services:
     environment:
       - no_proxy=localhost,127.0.0.1
       - OLLAMA_HOST=0.0.0.0
+      - ZES_ENABLE_SYSMAN=1
       - OLLAMA_VULKAN=1
-      - GGML_VK_DISABLE_F16=1           # required: Mesa ANV driver has fp16 compute bug on this iGPU
+      #- GGML_VK_DISABLE_F16=1           # required: Mesa ANV driver has fp16 compute bug on this iGPU
       # Pass-through from .env — values match recommendation
+      - GGML_SYCL_F16
+      - GGML_SYCL_DEBUG
       - OLLAMA_FLASH_ATTENTION
       - OLLAMA_KV_CACHE_TYPE
       - OLLAMA_NUM_PARALLEL
@@ -24,7 +27,7 @@ services:
       - OLLAMA_DEBUG
       - OLLAMA_CONTEXT_LENGTH
       - OLLAMA_NUM_GPU
-      - OLLAMA_MAX_VRAM
+      - OLLAMA_IGPU_ENABLE
       - OLLAMA_GPU_OVERHEAD
       - OLLAMA_KEEP_ALIVE
 

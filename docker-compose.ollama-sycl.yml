@@ -25,7 +25,7 @@ services:
       # Pass-through from .env — values match recommendation
       - OLLAMA_KEEP_ALIVE
       - OLLAMA_CONTEXT_LENGTH
-      - OLLAMA_MAX_VRAM
+      - OLLAMA_IGPU_ENABLE
       - OLLAMA_NUM_PARALLEL
       - OLLAMA_MAX_LOADED_MODELS
       - OLLAMA_MAX_QUEUE
