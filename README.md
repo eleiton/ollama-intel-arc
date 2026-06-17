@@ -10,16 +10,16 @@ streamline Stable Diffusion capabilities.
 
 You can also run an optional docker container with [OpenAI Whisper](https://github.com/openai/whisper) to perform Automatic Speech Recognition (ASR) tasks.
 
-All these containers have been optimized for Intel Arc Series GPUs on Linux systems by using [Intel® Extension for PyTorch](https://github.com/intel/intel-extension-for-pytorch).
+The Ollama container runs a **native [SYCL](https://github.com/ggml-org/llama.cpp/blob/master/docs/backend/SYCL.md) (or [Vulkan](https://github.com/ggml-org/llama.cpp/blob/master/docs/build.md#vulkan)) llama.cpp backend** built directly from upstream Ollama — no IPEX-LLM. The Stable Diffusion and Whisper containers are still optimized for Intel Arc GPUs using [Intel® Extension for PyTorch](https://github.com/intel/intel-extension-for-pytorch).
 
 ![screenshot](resources/open-webui.png)
 
 ## Services
-1. Ollama  
-   * Runs llama.cpp and Ollama with IPEX-LLM on your Linux computer with Intel Arc GPU.  
-   * Built following the guidelines from [Intel](https://github.com/intel/ipex-llm/blob/main/docs/mddocs/DockerGuides/README.md).  
-   * Uses the official [Intel ipex-llm docker image](https://hub.docker.com/r/intelanalytics/ipex-llm-inference-cpp-xpu) as the base container.
-   * Uses the latest versions of required packages, prioritizing cutting-edge features over stability.  
+1. Ollama
+   * Runs Ollama with a **native llama.cpp `ggml-sycl` backend**, compiled from Ollama source against Intel® oneAPI (`icpx` / Level Zero). No IPEX-LLM dependency.
+   * The image is built locally in two stages (see [`ollama-sycl/Dockerfile`](ollama-sycl/Dockerfile)): stage 1 builds `libggml-sycl.so` with oneAPI; stage 2 drops it next to the official Ollama binary on a slim Ubuntu runtime with the Intel GPU user-space drivers (Level Zero, compute-runtime, IGC, GMM).
+   * A **Vulkan** alternative is also provided ([`docker-compose.ollama-vulkan.yml`](docker-compose.ollama-vulkan.yml)) using the stock `ollama/ollama` image. On Meteor Lake / Xe-LPG iGPUs the Vulkan backend is often competitive with SYCL while requiring no custom build — worth benchmarking on your hardware.
+   * Runtime behavior is tuned via a `.env` file (see [`.env.example`](.env.example)) — context length, KV-cache type, flash attention, GPU offload, etc.
    * Exposes port `11434` for connecting other tools to your Ollama service.
 
 2. Open WebUI  
@@ -40,15 +40,28 @@ All these containers have been optimized for Intel Arc Series GPUs on Linux syst
 
 5. OpenAI Whisper
    * Robust Speech Recognition via Large-Scale Weak Supervision
-   * Uses as the base container the official [Intel® Extension for PyTorch](* Uses as the base container the official [Intel® Extension for PyTorch](https://pytorch-extension.intel.com/installation?platform=gpu)
+   * Uses as the base container the official [Intel® Extension for PyTorch](https://pytorch-extension.intel.com/installation?platform=gpu)
 
 ## Setup
-Run the following commands to start your Ollama instance with Open WebUI
+
+First, create your `.env` file from the example and adjust it to your hardware if needed:
 ```bash
 $ git clone https://github.com/eleiton/ollama-intel-arc.git
 $ cd ollama-intel-arc
-$ podman compose up
+$ cp .env.example .env
 ```
+
+Then start Ollama + Open WebUI with the **native SYCL** backend (this builds the Ollama image locally the first time):
+```bash
+$ podman compose -f docker-compose.ollama-sycl.yml up --build
+```
+
+Alternatively, use the **Vulkan** backend (no local build — pulls the stock Ollama image):
+```bash
+$ podman compose -f docker-compose.ollama-vulkan.yml up
+```
+
+> The repository also ships a legacy `docker-compose.yml` based on the now-outdated `intelanalytics/ipex-llm-inference-cpp-xpu` image. It is kept for reference only; the native SYCL/Vulkan composes above are the recommended path.
 
 Additionally, if you want to run one or more of the image generation tools, run these command in a different terminal:
 
@@ -67,6 +80,22 @@ If you want to run Whisper for automatic speech recognition, run this command in
 $ podman compose -f docker-compose.whisper.yml up
 ```
 
+## Configuration
+
+Ollama runtime behavior is controlled through environment variables in your `.env` file (passed through by the compose files). The defaults in [`.env.example`](.env.example) are tuned for an Intel Arc Graphics (Meteor Lake-P) integrated GPU with shared/UMA memory. Key settings:
+
+| Variable | Default | Notes |
+|---|---|---|
+| `OLLAMA_CONTEXT_LENGTH` | `8192` | Larger contexts grow the KV cache and reduce the model size that fits. |
+| `OLLAMA_KV_CACHE_TYPE` | `q4_0` | Quantized KV cache saves memory. On a UMA iGPU with plenty of RAM, try `f16` or `q8_0` — it can be faster and higher quality at no real memory cost. |
+| `OLLAMA_FLASH_ATTENTION` | `true` | Works on both the SYCL and Vulkan paths on this iGPU. |
+| `OLLAMA_NUM_GPU` | `999` | Offload all transformer layers to the GPU. |
+| `OLLAMA_NUM_PARALLEL` | `1` | One request at a time — UMA iGPUs are bandwidth-bound, so parallelism gives no throughput gain. |
+| `OLLAMA_KEEP_ALIVE` | `2h` | Keep models resident to avoid reload latency. |
+| `GGML_SYCL_F16` | `1` | Enable fp16 math in the SYCL backend. |
+
+See [`.env.example`](.env.example) for the full annotated list.
+
 ## Validate
 Run the following command to verify your Ollama instance is up and running
 ```bash
@@ -75,13 +104,14 @@ Ollama is running
 ```
 When using Open WebUI, you should see this partial output in your console, indicating your arc gpu was detected
 ```bash
-[ollama-intel-arc] | Found 1 SYCL devices:
-[ollama-intel-arc] | |  |                   |                                       |       |Max    |        |Max  |Global |                     |
-[ollama-intel-arc] | |  |                   |                                       |       |compute|Max work|sub  |mem    |                     |
-[ollama-intel-arc] | |ID|        Device Type|                                   Name|Version|units  |group   |group|size   |       Driver version|
-[ollama-intel-arc] | |--|-------------------|---------------------------------------|-------|-------|--------|-----|-------|---------------------|
-[ollama-intel-arc] | | 0| [level_zero:gpu:0]|                     Intel Arc Graphics|  12.71|    128|    1024|   32| 62400M|         1.6.32224+14|
+[ollama-sycl] | Found 1 SYCL devices:
+[ollama-sycl] | |  |                   |                                       |       |Max    |        |Max  |Global |                     |
+[ollama-sycl] | |  |                   |                                       |       |compute|Max work|sub  |mem    |                     |
+[ollama-sycl] | |ID|        Device Type|                                   Name|Version|units  |group   |group|size   |       Driver version|
+[ollama-sycl] | |--|-------------------|---------------------------------------|-------|-------|--------|-----|-------|---------------------|
+[ollama-sycl] | | 0| [level_zero:gpu:0]|                     Intel Arc Graphics|  12.71|    128|    1024|   32| 62400M|         1.6.32224+14|
 ```
+(The Vulkan backend logs `ggml_vulkan: Found ... Intel(R) Arc(TM) Graphics` instead.)
 
 ## Using Image Generation
 * Open your web browser to http://localhost:7860 to access the SD.Next web page.
@@ -142,40 +172,46 @@ When using Open WebUI, you should see this partial output in your console, indic
 ```
 
 ## Updating the containers
-If there are new updates in the [ipex-llm-inference-cpp-xpu](https://hub.docker.com/r/intelanalytics/ipex-llm-inference-cpp-xpu) docker Image or in the Open WebUI docker Image, you may want to update your containers, to stay up to date.
 
-Before any updates, be sure to stop your containers
+For the **native SYCL** Ollama image, updates come from rebuilding against a newer Ollama release. Bump `OLLAMA_VERSION` (and, if needed, the Intel GPU driver pins) at the top of [`ollama-sycl/Dockerfile`](ollama-sycl/Dockerfile), then rebuild:
 ```bash
-$ podman compose down 
+$ podman compose -f docker-compose.ollama-sycl.yml build --no-cache
+$ podman compose -f docker-compose.ollama-sycl.yml up
 ```
 
-Then just run a pull command to retrieve the `latest` images.
+For the **Vulkan** image, bump the `ollama/ollama` tag in [`docker-compose.ollama-vulkan.yml`](docker-compose.ollama-vulkan.yml) and pull:
 ```bash
-$ podman compose pull
+$ podman compose -f docker-compose.ollama-vulkan.yml pull
+$ podman compose -f docker-compose.ollama-vulkan.yml up
 ```
 
-
-After that, you can run compose up to start your services again.
+For Open WebUI and the other `latest`-tagged images, stop the stack and pull:
 ```bash
-$ podman compose up
+$ podman compose -f docker-compose.ollama-sycl.yml down
+$ podman compose -f docker-compose.ollama-sycl.yml pull
+$ podman compose -f docker-compose.ollama-sycl.yml up
 ```
 
 ## Manually connecting to your Ollama container
 You can connect directly to your Ollama container by running these commands:
 
 ```bash
-$ podman exec -it ollama-intel-arc /bin/bash
-$ /llm/ollama/ollama -v
+$ podman exec -it ollama-sycl /bin/bash
+$ ollama -v
 ```
+(Use `ollama-vulkan` as the container name if you are running the Vulkan compose.)
 
 ## My development environment:
 * Core Ultra 7 155H
 * Intel® Arc™ Graphics (Meteor Lake-P)
-* Fedora 41
+* Fedora 43
 
 ## References 
 * [Open WebUI documentation](https://docs.openwebui.com/)
-* [Docker - Intel ipex-llm tags](https://hub.docker.com/r/intelanalytics/ipex-llm-serving-xpu/tags)
+* [Ollama](https://github.com/ollama/ollama)
+* [llama.cpp SYCL backend](https://github.com/ggml-org/llama.cpp/blob/master/docs/backend/SYCL.md)
+* [llama.cpp Vulkan backend](https://github.com/ggml-org/llama.cpp/blob/master/docs/build.md#vulkan)
+* [Intel® oneAPI Base Toolkit](https://www.intel.com/content/www/us/en/developer/tools/oneapi/base-toolkit.html)
+* [Intel compute-runtime (Level Zero / OpenCL driver)](https://github.com/intel/compute-runtime)
 * [Docker - Intel extension for pytorch](https://hub.docker.com/r/intel/intel-extension-for-pytorch/tags)
-* [GitHub - Intel ipex-llm tags](https://github.com/intel/ipex-llm/tags)
 * [GitHub - Intel extension for pytorch](https://github.com/intel/intel-extension-for-pytorch/tags)
