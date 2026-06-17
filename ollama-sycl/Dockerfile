@@ -1,8 +1,8 @@
-ARG OLLAMA_VERSION=0.30.8
-ARG COMPUTE_RUNTIME_VERSION=26.18.38308.1
-ARG LEVEL_ZERO_VERSION=1.28.2
-ARG IGC_VERSION=2.34.4
-ARG IGC_BUILD=21428
+ARG OLLAMA_VERSION=0.30.9
+ARG COMPUTE_RUNTIME_VERSION=26.22.38646.4
+ARG LEVEL_ZERO_VERSION=1.28.6
+ARG IGC_VERSION=2.36.3
+ARG IGC_BUILD=21719
 ARG GMM_VERSION=22.10.0
 
 # =============================================================================
@@ -93,7 +93,7 @@ RUN apt-get update && \
 
 # Intel GPU runtimes: Level Zero, IGC, compute-runtime, GMM
 RUN mkdir -p /tmp/gpu && cd /tmp/gpu && \
-  wget https://github.com/oneapi-src/level-zero/releases/download/v${LEVEL_ZERO_VERSION}/level-zero_${LEVEL_ZERO_VERSION}+u24.04_amd64.deb && \
+  wget https://github.com/oneapi-src/level-zero/releases/download/v${LEVEL_ZERO_VERSION}/libze1_${LEVEL_ZERO_VERSION}+u24.04_amd64.deb && \
   wget https://github.com/intel/intel-graphics-compiler/releases/download/v${IGC_VERSION}/intel-igc-core-2_${IGC_VERSION}+${IGC_BUILD}_amd64.deb && \
   wget https://github.com/intel/intel-graphics-compiler/releases/download/v${IGC_VERSION}/intel-igc-opencl-2_${IGC_VERSION}+${IGC_BUILD}_amd64.deb && \
   wget https://github.com/intel/compute-runtime/releases/download/${COMPUTE_RUNTIME_VERSION}/intel-ocloc_${COMPUTE_RUNTIME_VERSION}-0_amd64.deb && \
