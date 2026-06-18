@@ -53,12 +53,12 @@ $ cp .env.example .env
 
 Then start Ollama + Open WebUI with the **native SYCL** backend (this builds the Ollama image locally the first time):
 ```bash
-$ podman compose -f docker-compose.ollama-sycl.yml up --build
+$ podman compose -f docker-compose.ollama-sycl.yml up -d --build
 ```
 
 Alternatively, use the **Vulkan** backend (no local build — pulls the stock Ollama image):
 ```bash
-$ podman compose -f docker-compose.ollama-vulkan.yml up
+$ podman compose -f docker-compose.ollama-vulkan.yml up -d
 ```
 
 > The repository also ships a legacy `docker-compose.yml` based on the now-outdated `intelanalytics/ipex-llm-inference-cpp-xpu` image. It is kept for reference only; the native SYCL/Vulkan composes above are the recommended path.
@@ -67,17 +67,17 @@ Additionally, if you want to run one or more of the image generation tools, run 
 
 For ComfyUI
 ```bash
-$ podman compose -f docker-compose.comfyui.yml up
+$ podman compose -f docker-compose.comfyui.yml up -d
 ```
 
 For SD.Next
 ```bash
-$ podman compose -f docker-compose.sdnext.yml up
+$ podman compose -f docker-compose.sdnext.yml up -d
 ```
 
 If you want to run Whisper for automatic speech recognition, run this command in a different terminal:
 ```bash
-$ podman compose -f docker-compose.whisper.yml up
+$ podman compose -f docker-compose.whisper.yml up -d
 ```
 
 ## Configuration
@@ -176,20 +176,20 @@ When using Open WebUI, you should see this partial output in your console, indic
 For the **native SYCL** Ollama image, updates come from rebuilding against a newer Ollama release. Bump `OLLAMA_VERSION` (and, if needed, the Intel GPU driver pins) at the top of [`ollama-sycl/Dockerfile`](ollama-sycl/Dockerfile), then rebuild:
 ```bash
 $ podman compose -f docker-compose.ollama-sycl.yml build --no-cache
-$ podman compose -f docker-compose.ollama-sycl.yml up
+$ podman compose -f docker-compose.ollama-sycl.yml up -d
 ```
 
 For the **Vulkan** image, bump the `ollama/ollama` tag in [`docker-compose.ollama-vulkan.yml`](docker-compose.ollama-vulkan.yml) and pull:
 ```bash
 $ podman compose -f docker-compose.ollama-vulkan.yml pull
-$ podman compose -f docker-compose.ollama-vulkan.yml up
+$ podman compose -f docker-compose.ollama-vulkan.yml up -d
 ```
 
 For Open WebUI and the other `latest`-tagged images, stop the stack and pull:
 ```bash
 $ podman compose -f docker-compose.ollama-sycl.yml down
-$ podman compose -f docker-compose.ollama-sycl.yml pull
-$ podman compose -f docker-compose.ollama-sycl.yml up
+$ podman compose -f docker-compose.ollama-sycl.yml pull open-webui
+$ podman compose -f docker-compose.ollama-sycl.yml up -d
 ```
 
 ## Manually connecting to your Ollama container
