@@ -1,0 +1,9 @@
+# IDE
+.idea
+
+# Personal / local config
+.env
+plans
+notes.txt
+ollama-sycl/*.py
+benchmark.sh
