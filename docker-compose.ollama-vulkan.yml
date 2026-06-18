@@ -1,6 +1,6 @@
 services:
   ollama-vulkan:
-    image: ollama/ollama:0.30.9
+    image: ollama/ollama:0.30.10
     container_name: ollama-vulkan
     restart: unless-stopped
     devices:
@@ -15,7 +15,7 @@ services:
       - OLLAMA_HOST=0.0.0.0
       - ZES_ENABLE_SYSMAN=1
       - OLLAMA_VULKAN=1
-      #- GGML_VK_DISABLE_F16=1           # required: Mesa ANV driver has fp16 compute bug on this iGPU
+
       # Pass-through from .env — values match recommendation
       - GGML_SYCL_F16
       - GGML_SYCL_DEBUG

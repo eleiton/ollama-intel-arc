@@ -1,4 +1,4 @@
-ARG OLLAMA_VERSION=0.30.9
+ARG OLLAMA_VERSION=0.30.10
 ARG COMPUTE_RUNTIME_VERSION=26.22.38646.4
 ARG LEVEL_ZERO_VERSION=1.28.6
 ARG IGC_VERSION=2.36.3
@@ -41,31 +41,31 @@ RUN cmake -S llama/server -B build \
 RUN \
   # SYCL / DPC++ runtime \
   cp /opt/intel/oneapi/compiler/latest/lib/libsycl.so* /sycl-runner/ && \
-  # Unified Runtime (oneAPI 2025+) — search multiple possible locations
+  # Unified Runtime (oneAPI 2025+)  search multiple possible locations \
   find /opt/intel/oneapi -name 'libur_loader.so*' | head -3 | xargs -I{} cp {} /sycl-runner/ && \
   find /opt/intel/oneapi -name 'libur_adapter_level_zero.so*' | head -3 | xargs -I{} cp {} /sycl-runner/ && \
   find /opt/intel/oneapi -maxdepth 4 -name 'libumf.so*' | head -3 | xargs -I{} cp {} /sycl-runner/ && \
   # oneDNN (enabled by GGML_SYCL_DNN=ON default) \
   cp /opt/intel/oneapi/dnnl/latest/lib/libdnnl.so* /sycl-runner/ 2>/dev/null; \
-  # oneMKL
+  # oneMKL \
   cp /opt/intel/oneapi/mkl/latest/lib/libmkl_core.so* /sycl-runner/ && \
   cp /opt/intel/oneapi/mkl/latest/lib/libmkl_intel_ilp64.so* /sycl-runner/ && \
   cp /opt/intel/oneapi/mkl/latest/lib/libmkl_sycl_blas.so* /sycl-runner/ && \
   cp /opt/intel/oneapi/mkl/latest/lib/libmkl_tbb_thread.so* /sycl-runner/ && \
-  # TBB
+  # TBB \
   cp /opt/intel/oneapi/tbb/latest/lib/intel64/gcc*/libtbb.so* /sycl-runner/ && \
-  # Intel compiler runtime
+  # Intel compiler runtime \
   cp /opt/intel/oneapi/compiler/latest/lib/libsvml.so /sycl-runner/ && \
   cp /opt/intel/oneapi/compiler/latest/lib/libimf.so /sycl-runner/ && \
   cp /opt/intel/oneapi/compiler/latest/lib/libintlc.so* /sycl-runner/ && \
   cp /opt/intel/oneapi/compiler/latest/lib/libirng.so /sycl-runner/ && \
   cp /opt/intel/oneapi/compiler/latest/lib/libiomp5.so /sycl-runner/ && \
-  # Level-zero PI plugin (legacy, may not exist in newer oneAPI)
+  # Level-zero PI plugin (legacy, may not exist in newer oneAPI) \
   cp /opt/intel/oneapi/compiler/latest/lib/libpi_level_zero.so* /sycl-runner/ 2>/dev/null; \
-  # SYCL SPIR-V kernels (needed for bfloat16, complex math, etc.)
+  # SYCL SPIR-V kernels (needed for bfloat16, complex math, etc.) \
   cp /opt/intel/oneapi/compiler/latest/lib/libsycl-fallback*.spv /sycl-runner/ && \
   cp /opt/intel/oneapi/compiler/latest/lib/libsycl-native*.spv /sycl-runner/ && \
-  # Strip debug symbols to reduce image size
+  # Strip debug symbols to reduce image size \
   strip --strip-unneeded /sycl-runner/*.so* 2>/dev/null; true
 
 # =============================================================================
